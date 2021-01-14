@@ -1,0 +1,21 @@
+{
+  "name": "pagomedios-ec",
+  "version": "1.0.0",
+  "description": "Libreria para comunicarse directamente con PagoMedios Ecuador y realizar pagos por tarjeta de crédito",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:therpobinski/pagomedios-ec.git"
+  },
+  "keywords": [
+    "pagomedios",
+    "abimedia",
+    "payment-credit",
+    "credit-card"
+  ],
+  "author": "therpobinski <crispinalejo16@gmail.com>",
+  "license": "ISC"
+}
