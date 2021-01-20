@@ -1,7 +1,7 @@
 
 import axios from 'axios'
 import FormData from 'form-data'
-import errs from 'restify-errors'
+import { ConflictError } from 'restify-errors'
 
 const ENDPOINT = 'https://cloud.abitmedia.com/api'
 const tokenDev = '2y-13-tx-zsjtggeehkmygjbtsf-51z5-armmnw-ihbuspjufwubv4vxok6ery7wozao3wmggnxjgyg'
@@ -9,6 +9,10 @@ const tokenDev = '2y-13-tx-zsjtggeehkmygjbtsf-51z5-armmnw-ihbuspjufwubv4vxok6ery
 /**
  * Campos especificados en:
  * https://abitmedia.cloud/api-reference/index.php?path=/payments/create-payment-request&action=POST
+ * El `amount` debera ser la suma de `amountWithTax` + `amountWithoutTax` + `tax`
+ * `amountWithTax` debera ser el subtotal sin IVA
+ * `amountWithoutTax` debera ser la sumatoria de productos que no tengan IVA
+ * `tax` debera ser el IVA (12%)
 */
 export interface Data {
   companyType: string,
@@ -37,7 +41,7 @@ export interface Data {
  * tipo de petición. Para esto será necesario enviar parametros como:
  * @param kid Continuación del `ENDPOINT` principal declarada
  * @param body El cuerpo de la petición. (No obligatorio)
- * @param token El token de usuario que proporciona PagoMedios
+ * @param token El Access-Token de usuario para autentificación
  * @param method Método de la petición (post, get)
  * @param query Parametros de la petición. (No obligatorio)
  */
@@ -72,18 +76,45 @@ async function instanceAxios (args: {
   })
 }
 
+/**
+ * Obtiene el estado de la transacción
+ * @param id TokenID de la transacción que es devuelta en la petición `defaul`
+ * @throws {ConflictError} No se pudo consultar el estado de la transacción
+*/
 export async function getStatusLinkPayment (id: string) {
   try {
-    
+    const status = await instanceAxios({
+      method: 'get', kid: '/payments/status-transaction',
+      query: { token: id },
+    })
+    return status
   } catch (err) {
-    
+    throw new ConflictError({
+      info: { typeCode: 'PagoMediosCreateLink' }
+    }, `Error inesperado al consultar estado el link de pago, \
+intentelo nuevamente, error: ${e.message}`)
   }
 }
 
-export default async function (data: Data) {
+/*
+ * Sera necesario enviar datos correctos y calculos precisos, caso contrario
+ * no se ejecutara con normalidad la petición y saltará un error.
+*/
+export default async function (body: Data) {
   try {
-    
+    const link = await instanceAxios({
+      method: 'post', kid: '/payments/create-payment-request', body,
+    })
+    if (link.code === 0 && link.status !== 200) {
+      throw new ConflictError({
+        info: { typeCode: link.code }
+      }, `Se recomienda revisar que sus datos personales estén correctos.
+Estado: ${link.status}, Código: ${link.code}`)
+    }
+    return link.data
   } catch (err) {
-    
+    throw new ConflictError({
+      info: { typeCode: 'PagoMediosCreateLink' }
+    }, `Error al crear el link de pago: ${e.message}`)
   }
 }
