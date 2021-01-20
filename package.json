@@ -4,7 +4,7 @@
   "description": "Libreria para comunicarse directamente con PagoMedios Ecuador y realizar pagos por tarjeta de crédito",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -14,13 +14,18 @@
     "pagomedios",
     "abimedia",
     "payment-credit",
-    "credit-card"
+    "credit-card",
+    "pagos-online"
   ],
   "author": "therpobinski <crispinalejo16@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",
-    "restify-errors": "^8.0.2",
+    "restify-errors": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
     "typescript": "^4.1.3"
   }
 }
