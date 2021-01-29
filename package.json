@@ -2,9 +2,10 @@
   "name": "pagomedios-ec",
   "version": "1.0.0",
   "description": "Libreria para comunicarse directamente con PagoMedios Ecuador y realizar pagos por tarjeta de crédito",
-  "main": "index.js",
+  "main": "/dist/pagomedios-ec.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -19,13 +20,11 @@
   ],
   "author": "therpobinski <crispinalejo16@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "axios": "^0.21.1",
-    "restify-errors": "^8.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "jest": "^26.6.3",
+    "ts-jest": "^26.5.0",
     "typescript": "^4.1.3"
   }
 }
