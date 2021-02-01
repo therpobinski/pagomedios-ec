@@ -4,7 +4,7 @@
 ![Testing](https://github.com/therpobinski/pagomedios-ec/workflows/Testing/badge.svg)
 
 Es una libreria para facilitar la integración con 
-[Pago Medios Ecuadorc](https://abitmedia.cloud/api-reference/index.php), la 
+[Pago Medios Ecuador](https://abitmedia.cloud/api-reference/index.php), la 
 cual permitira un ágil cobro por medio de pagos electrónicos, como tarjetas 
 de crédito.
 
