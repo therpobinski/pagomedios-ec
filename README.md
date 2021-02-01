@@ -34,6 +34,8 @@ necesario construir el
 [Body](https://abitmedia.cloud/api-reference/index.php?path=/payments/create-payment-request&action=POST) 
 a enviar con formato `JSON` (Parámetros POST).
 
+**Prueba**
+
 ```js
 import generetePayment from 'pagomedios-ec'
 
@@ -44,6 +46,21 @@ const body = {
   ...,
 }
 const data = await generetePayment(body)
+```
+
+**Producción**
+
+```js
+import generetePayment from 'pagomedios-ec'
+
+const access-token = '${TuTokenAccess-Proporcionado-por-PagoMediosEc}'
+const body = { 
+  companyType: 'Persona Natural',
+  document: '1758698558',
+  ...,
+  ...,
+}
+const data = await generetePayment(body, access-token)
 ```
 
 ***Ejemplo de respuesta***
