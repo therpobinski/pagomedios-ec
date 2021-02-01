@@ -1,0 +1,31 @@
+name: Testing
+
+on:
+  push:
+    branches:
+    - master
+    - release
+  pull_request:
+    branches:
+    - master
+    - release
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Git checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+
+    - name: Run npm commands
+      run: |
+        npm install
+        npm run build
+        npm test
