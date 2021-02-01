@@ -1,6 +1,6 @@
 {
   "name": "pagomedios-ec",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Libreria para comunicarse directamente con PagoMedios Ecuador y realizar pagos por tarjeta de crédito",
   "main": "/dist/pagomedios-ec.js",
   "scripts": {
