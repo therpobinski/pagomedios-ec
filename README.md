@@ -1,5 +1,8 @@
 # pagomedios-ec
 
+[![npm version](https://badge.fury.io/js/pagomedios-ec.svg)](https://badge.fury.io/js/pagomedios-ec)
+![Testing](https://github.com/therpobinski/pagomedios-ec/workflows/Testing/badge.svg)
+
 Es una libreria para facilitar la integración con 
 [Pago Medios Ecuadorc](https://abitmedia.cloud/api-reference/index.php), la 
 cual permitira un ágil cobro por medio de pagos electrónicos, como tarjetas 
