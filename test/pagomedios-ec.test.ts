@@ -109,12 +109,20 @@ describe('obtener el estado de una transacción', () => {
   })
 })
 
-// describe('reversar un token pagado', () => {
-//   test('token existente y correcto reverso', async () => {
-    
-//   })
-
-//   test('token no existe', async () => {
-    
-//   })
-// })
+describe('reversar un token pagado', () => {
+  /**
+   * No se podra hacer pruebas para reverso correcto, ya que será necesario 
+   * hacer un pago por cada reverso, la generación de link de pago son
+   * automáticos, pero el pago es manual que lo que no se puede generar un 
+   * reverso automático.
+   */
+  test('token no existe', async () => {
+    try {
+      const res = await getStatusLinkPayment('2y-13-sdfdgd51sdf')
+    } catch (e) {
+      expect(e).toBeInstanceOf(Error)
+      expect(e.type).toBe(PagoMediosErrorEc.ID_REQUEST)
+      expect(typeof e.message).toEqual('string')
+    }
+  })
+})
