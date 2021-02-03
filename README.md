@@ -78,3 +78,19 @@ const data = await generetePayment(body, access-token)
   }
 }
 ```
+
+ ### Otras funciones
+ 
+```js
+import { getStatusLinkPayment, reversePayment } from 'pagomedios-ec'
+```
+
+**Consultar estado**
+
+- Pruebas: getStatusLinkPayment(tokenPayment)
+- Producción: getStatusLinkPayment(tokenPayment, accessToken)
+
+**Revertir pago**
+
+- Pruebas: reversePayment(tokenPayment)
+- Producción: reversePayment(tokenPayment, accessToken)
