@@ -18,10 +18,10 @@ const tokenDev = '6tyisfsa3abtoqtkfenmz7c0-fphjgt1k5mepyiyzixecti-u69wlup2emsi4s
  * `tax` debera ser el IVA (12%)
 */
 export interface Data {
-  integration: boolean
-  companyType: 'Individual' | 'Company'
+  integration?: boolean
+  companyType: 'Persona Natural' | 'Empresa'
   document: string
-  documentType: '04' | '05' | '06' | '08'
+  documentType: '01' | '02' | '03' | '06'
   fullName: string
   address: string
   mobile: string
@@ -63,17 +63,30 @@ export interface ResponseEc {
   data?: Record<string, any> | Record<string, any>[]
 }
 
-function formatBody(data: Data): Record<string, any> {
+function getDocumentType (code: string): string {
+  switch (code) {
+    case '01':
+      return '05'
+    case '02':
+      return '04'
+    case '03':
+      return '08'
+    default:
+      return '06'
+  }
+}
+
+function formatBody (data: Data): Record<string, any> {
   return {
     integration: data.integration || true,
     third: {
       document: data.document,
-      document_type: data.documentType,
+      document_type: getDocumentType(data.documentType),
       name: data.fullName,
       email: data.email,
       phones: data.mobile,
       address: data.address,
-      type: data.companyType,
+      type: data.companyType === 'Empresa' ? 'Company' : 'Individual',
     },
     generate_invoice: data.generateInvoice || 0,
     description: data.description,
@@ -213,18 +226,22 @@ export async function getStatusLinkPayment (id: string, token?: string) {
       status: StatusPayment.find(st =>
           st.id === (res.data as Record<string, any>[])[0].status,
         )?.description,
-      reference: (res.data as Record<string, any>[])[0].reference,
+      authorizationCode: (res.data as Record<string, any>[])[0].auth_code,
+      cardNumber: (res.data as Record<string, any>[])[0].display_number,
+      cardHolder: (res.data as Record<string, any>[])[0].cardholder,
     }
   }
 }
 
 /**
  * Reversa el pago realizado con el `token` del pago asigando
- * @param reference TokenID de la transacción que fue pagada
- * * @param token Access-Token suministrado por PagomediosEc para validar
+ * @param id `TokenID` de la transacción que fue pagada
+ * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
 */
-export async function reversePayment (reference: string, token?: string) {
+export async function reversePayment (id: string, token?: string) {
+  const { data } = await getPayment({ id }, token)
+  const reference = (data as Record<string, any>)?.reference
   const res = await instanceAxios({
     token,
     method: 'POST',
@@ -258,8 +275,13 @@ export async function getPayment (query?: Record<string, any>, token?: string) {
   }) as ResponseEc
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
-      res.message || 'Error en obtención de estado de pagos',
+      res.message || 'Error en obtención del pago',
       getCodeError(res.status),
+    )
+  } else if (res.data?.length === 0 && query?.id) {
+    throw new PagoMediosErrorEc(
+      'El ID enviado no existe',
+      PagoMediosErrorEc.NOT_FOUND,
     )
   } else if (res.data?.length === 1 && query?.id) {
     return {
@@ -286,7 +308,7 @@ export async function getSettings (token?: string) {
   }) as ResponseEc
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
-      res.message || 'Error en obtención de estado de pagos',
+      res.message || 'Error en obtención de las configuraciones',
       getCodeError(res.status),
     )
   }

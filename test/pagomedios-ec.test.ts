@@ -10,10 +10,9 @@ import PagoMediosErrorEc from '../src/pagomedios-ec-error'
 
 function makeBody ({ CIInc = false, bodyInc = false, taxInc = false }) {
   return {
-    integration: true,
-    companyType: 'Individual' as 'Individual' | 'Company',
+    companyType: 'Persona Natural' as 'Persona Natural' | 'Empresa',
     document: !CIInc ? '1726834771' : '15856985',
-    documentType: '05' as '04' | '05' | '06' | '08',
+    documentType: '01' as '01' | '02' | '03' | '06',
     fullName: 'Nombre Prueba Ecuadoriano',
     address: 'Quito - Ecuador',
     mobile: '+59399999999',
@@ -85,8 +84,10 @@ describe('obtener el estado de una transacción', () => {
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
+      expect(res.data).toHaveProperty('authorizationCode')
+      expect(res.data).toHaveProperty('cardNumber')
+      expect(res.data).toHaveProperty('cardHolder')
       expect(res.data).toHaveProperty('status')
-      expect(res.data).toHaveProperty('reference')
       expect(res.data.status).toBe('AUTORIZADA')
     } catch (e) { errorConnection(e) }
   })
@@ -108,7 +109,6 @@ describe('obtener el estado de una transacción', () => {
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
       expect(res.data).toHaveProperty('status')
-      expect(res.data).toHaveProperty('reference')
       expect(res.data.status).toBe('PENDIENTE DE PAGO')
     } catch (e) { errorConnection(e) }
   })
@@ -121,15 +121,25 @@ describe('reversar un token pagado', () => {
    * automáticos, pero el pago es manual que lo que no se puede generar un 
    * reverso automático.
    */
-  // test('reversar pago', async () => {
+  // test('reversar pago existosamente', async () => {
   //   try {
-  //     const res = await reversePayment('PM-iXJh1674057775')
+  //     const res = await reversePayment('cha_QaK7nsrGv61OKphjMmta1809')
   //     expect(res.success).toBe(true)
   //     expect(res.status).toBe(200)
   //     expect(res.data).toHaveProperty('id')
   //     expect(res.data).toHaveProperty('msg')
   //   } catch (e) { errorConnection(e) }
   // })
+
+  test('reversar pago inexistente', async () => {
+    try {
+      const res = await reversePayment('cha_XAxITohqD4AQITLMx4X7049E')
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(Error)
+      expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
+      expect(typeof e.message).toEqual('string')
+    }
+  })
 
   test('pago reversado', async () => {
     try {
@@ -138,14 +148,13 @@ describe('reversar un token pagado', () => {
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
       expect(res.data).toHaveProperty('status')
-      expect(res.data).toHaveProperty('reference')
       expect(res.data.status).toBe('REVERSADA')
     } catch (e) { errorConnection(e) }
   })
 
-  test.only('pago no se puede reversar por falta de pago', async () => {
+  test('pago no se puede reversar por falta de pago', async () => {
     try {
-      const res = await reversePayment('PM-B70r1674068862')
+      const res = await reversePayment('cha_Egh3408DMoi3iIOaM0Ai8862')
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -167,6 +176,16 @@ describe('Obtener pagos', () => {
       expect(res.data).toHaveProperty('reference')
       expect(res.data).toHaveProperty('url')
     } catch(e) { errorConnection(e) }
+  })
+
+  test('Obtener un pago inexistente', async () => {
+    try {
+      const res = await getPayment({ id: 'cha_XAxITohqD4AQITLMx4X7049E' })
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(Error)
+      expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
+      expect(typeof e.message).toEqual('string')
+    }
   })
 
   test('Obtener varios pagos', async () => {

@@ -11,7 +11,7 @@ de crédito.
 ## Funciones
 
 Estas son las funciones que se encuentran integradas en la actual versión.
-  - Creación de link de pago.
+  - Creación de solicitud de pago.
   - Comprobación del estado de pago
   - Reversar un pago
   - Obtener pagos (uno o varios)
@@ -33,8 +33,7 @@ $ npm install pagomedios-ec
 MIT
 
 ## Crear solicitud de pago
-Este es un ejemplo simple para la creación de un link de pago, para esto será 
-necesario construir el `BODY` detallado a continuación en formato `JSON` (Parámetros POST).
+Este es un ejemplo simple para la creación de una solicitud de pago, para esto será necesario construir el `BODY` detallado a continuación en formato `JSON` (Parámetros POST).
 El segundo parámetro es el `token`, el cual se envia en caso de querer hacerlo en producción, y si no se envia se tomará el `token` de pruebas.
 
 ```js
@@ -43,9 +42,9 @@ import generetePayment from 'pagomedios-ec'
 const access-token = '${TuTokenAccess-Proporcionado-por-PagoMediosEc}'
 type body = { 
   integration: boolean
-  companyType: 'Individual' | 'Company'
+  companyType: 'Persona Natural' | 'Empresa'
   document: string
-  documentType: '04' | '05' | '06' | '08'
+  documentType: '01' | '02' | '03' | '06'
   fullName: string
   address: string
   mobile: string
@@ -63,13 +62,13 @@ type body = {
 
 Donde:
 `companyType`:
-  * 'Individual': Persona natural
-  * 'Company': Empresa 
+  * 'Persona Natural': Persona natural
+  * 'Empresa': Empresa
 `documentType`:
-  * '04': RUC
-  * '05': Cédula ecuatoriana
+  * '01': Cédula ecuatoriana
+  * '02': RUC
+  * '03': Identificación del exterior
   * '06': Pasaporte
-  * '08': Identificación del exterior
 `generateInvoice`:
   * 0: No generar factura electrónica
   * 1: Generar factura electrónica (Debe tener configurado su cuenta en FacturaSoft)
@@ -110,7 +109,9 @@ const data = await getStatusLinkPayment(id, access-token)
   "data": {
     "id": "cha_XAxITohqD4AQITLMx4X70492",
     "status": "AUTORIZADA",
-    "reference": "PM-ksU31674052228"
+    "authorizationCode": "478206",
+    "cardNumber": "655732******1213",
+    "cardHolder": "TOC SYSTEMS"
   }
 }
 ```
@@ -142,11 +143,11 @@ En caso de obtener uno solo, se envia en la `query` el `id` y se obtendrá un so
     { "id": 3, "description": "REVERSADA" },
   ],
   "data": {
-      "id": "cha_LfVziR4YH4AuK0IV3To41753",
-			"status": 1,
-			"reference": "PM-ryni1674061753",
-			"description": "Pago de prueba TOC",
-			....
+    "id": "cha_LfVziR4YH4AuK0IV3To41753",
+    "status": 1,
+    "reference": "PM-ryni1674061753",
+    "description": "Pago de prueba TOC",
+    ....
   }
 }
 ```
@@ -186,13 +187,13 @@ En caso de obtener vario, no es necesario enviar la `query.id`, puede enviar otr
 ## Reversar un pago
 
 Se envia como parámetro:
-  * `reference`: Es la referencia que crea `Pago Medios` a cada solicitud de pago, se puede obtener en `getStatusLinkPayment` o `getPayment`.
+  * `id`: Es el `TokenID` que se generá en la creación de la solicitud de pago.
   * `token`: En caso de ser en producción se envia el `token` proporcionado por pago medios, caso contrario no se envia nada; por defecto toma el `token` de pruebas.
 
 ```js
 import { reversePayment } from 'pagomedios-ec'
 const access-token = '${TuTokenAccess-Proporcionado-por-PagoMediosEc}'
-const data = await reversePayment(reference, access-token)
+const data = await reversePayment(id, access-token)
 ```
 
 ***Ejemplo de respuesta***
@@ -261,8 +262,8 @@ const data = await getSettings(access-token)
 
 **Revertir pago**
 
-- Pruebas: `reversePayment(reference)`
-- Producción: `reversePayment(reference, accessToken)`
+- Pruebas: `reversePayment(tokenPayment)`
+- Producción: `reversePayment(tokenPayment, accessToken)`
 
 **Obtener configuraciones**
 
