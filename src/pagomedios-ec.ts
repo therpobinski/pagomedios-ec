@@ -53,14 +53,14 @@ export interface OptionsRequest {
   path: string
   token?: string
   method: 'GET' | 'POST'
-  query?: { [key: string]: string }
+  query?: { [key: string]: any }
 }
 
 export interface ResponseEc {
   success: boolean
   status: number
   message?: string
-  data?: any
+  data?: Record<string, any> | Record<string, any>[]
 }
 
 function formatBody(data: Data): Record<string, any> {
@@ -86,6 +86,25 @@ function formatBody(data: Data): Record<string, any> {
     custom_value: data.customValue || null,
   }
 }
+
+function getCodeError (code: number) {
+  switch (code) {
+    case 401:
+      return PagoMediosErrorEc.TYPE_TOKEN
+    case 404:
+      return PagoMediosErrorEc.NOT_FOUND
+    default:
+      return PagoMediosErrorEc.TYPE_BODY
+  }
+}
+
+type StatusPayment = 0 | 1 | 2 | 3
+const StatusPayment = [
+  { id: 0, description: 'PENDIENTE DE PAGO' },
+  { id: 1, description: 'AUTORIZADA' },
+  { id: 2, description: 'RECHAZADA' },
+  { id: 3, description: 'REVERSADA' },
+]
 
 /**
  * Instancia de petición genérica con `https`, con el fin de usarla para todo
@@ -150,25 +169,13 @@ export default async function (data: Data, token?: string) {
     token,
     method: 'POST',
     path: '/pagomedios/v2/payment-requests',
-  })
-  console.log(res)
+  }) as ResponseEc
   if (res.success === false && res.status >= 400) {
-    let codeErr
-    switch (res.status) {
-      case 401:
-        codeErr = PagoMediosErrorEc.TYPE_TOKEN
-        break
-      case 404:
-        codeErr = PagoMediosErrorEc.NOT_FOUND
-        break
-      default:
-        codeErr = PagoMediosErrorEc.TYPE_BODY
-    }
     throw new PagoMediosErrorEc(
       res.data
         ? JSON.stringify(res.data)
         : 'Error en la creación de solicitud de pago.',
-      codeErr,
+      getCodeError(res.status),
     )
   }
   return res
@@ -176,46 +183,112 @@ export default async function (data: Data, token?: string) {
 
 /**
  * Obtiene el estado de la transacción
- * @param id TokenID de la transacción que es devuelta en la petición `defaul`
+ * @param id TokenID de la transacción que es devuelta en la petición `defauld`
  * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
 */
-// export async function getStatusLinkPayment (id: string, token?: string) {
-//   const res = await instanceAxios({
-//     token,
-//     method: 'GET',
-//     query: { token: id },
-//     path: '/api/payments/status-transaction',
-//   })
-//   if (res.code === 0 && res.status === 404) {
-//     throw new PagoMediosErrorEc(res.message, PagoMediosErrorEc.ID_REQUEST)
-//   }
-//   return res
-// }
+export async function getStatusLinkPayment (id: string, token?: string) {
+  const res = await instanceAxios({
+    token,
+    method: 'GET',
+    query: { id },
+    path: '/pagomedios/v2/payment-requests',
+  }) as ResponseEc
+  if (res.success === false && res.status >= 400) {
+    throw new PagoMediosErrorEc(
+      res.message || 'Error en obtención de estado de pago.',
+      getCodeError(res.status),
+    )
+  } else if (res.data?.length === 0) {
+    throw new PagoMediosErrorEc(
+      'El ID enviado no existe',
+      PagoMediosErrorEc.ID_REQUEST,
+    )
+  }
+  return {
+    success: res.success,
+    status: res.status,
+    data: {
+      id: (res.data as Record<string, any>[])[0].id,
+      status: StatusPayment.find(st =>
+          st.id === (res.data as Record<string, any>[])[0].status,
+        )?.description,
+      reference: (res.data as Record<string, any>[])[0].reference,
+    }
+  }
+}
 
 /**
  * Reversa el pago realizado con el `token` del pago asigando
- * @param id TokenID de la transacción que fue pagada
+ * @param reference TokenID de la transacción que fue pagada
+ * * @param token Access-Token suministrado por PagomediosEc para validar
+ * la autentificación del usuario
 */
-// export async function reversePayment (id: string, token?: string) {
-//   const res = await instanceAxios({
-//     token,
-//     method: 'GET',
-//     query: { token: id },
-//     path: '/api/payments/reverse',
-//   })
-//   if (res.code === 0 && res.status === 404) {
-//     throw new PagoMediosErrorEc(res.message, PagoMediosErrorEc.ID_REQUEST)
-//   }
-//   return res
-// }
+export async function reversePayment (reference: string, token?: string) {
+  const res = await instanceAxios({
+    token,
+    method: 'POST',
+    body: { reference },
+    path: '/pagomedios/v2/cards/reverse',
+  }) as ResponseEc
+  if (res.success === false && res.status >= 400) {
+    throw new PagoMediosErrorEc(
+      res.message || 'Error en revisión de un pago revertido',
+      getCodeError(res.status),
+    )
+  }
+  return res
+}
 
 /**
  * Busca uno o varios solicitudes de pago, en este metodo se puede filtrar
  * por la query.
+ * @param query Es un objeto el cual se envia un filtro, en caso de enviar el
+ * `id` en la query, se devolvera un solo registro como objeto, caso contrario
+ * se enviará un array de objetos.
+ * * @param token Access-Token suministrado por PagomediosEc para validar
+ * la autentificación del usuario
  */
+export async function getPayment (query?: Record<string, any>, token?: string) {
+  const res = await instanceAxios({
+    token,
+    method: 'GET',
+    query,
+    path: '/pagomedios/v2/payment-requests',
+  }) as ResponseEc
+  if (res.success === false && res.status >= 400) {
+    throw new PagoMediosErrorEc(
+      res.message || 'Error en obtención de estado de pagos',
+      getCodeError(res.status),
+    )
+  } else if (res.data?.length === 1 && query?.id) {
+    return {
+      success: res.success,
+      status: res.status,
+      statusSchema: StatusPayment,
+      data: (res.data as Record<string, any>[])[0],
+    }
+  }
+  return { statusSchema: StatusPayment, ...res }
+}
 
 /**
  * Obtiene las configuración de la empresa en pagomedios, principalmente la
- * información de configuraciones de tarjetas y sus plazos configurados
+ * información de configuraciones de tarjetas y sus plazos configurados.
+ * * @param token Access-Token suministrado por PagomediosEc para validar
+ * la autentificación del usuario
  */
+export async function getSettings (token?: string) {
+  const res = await instanceAxios({
+    token,
+    method: 'GET',
+    path: '/pagomedios/v2/settings',
+  }) as ResponseEc
+  if (res.success === false && res.status >= 400) {
+    throw new PagoMediosErrorEc(
+      res.message || 'Error en obtención de estado de pagos',
+      getCodeError(res.status),
+    )
+  }
+  return res
+}
