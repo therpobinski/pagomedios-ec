@@ -246,25 +246,25 @@ const data = await getSettings(access-token)
 
 **Crear pago**
 
-- Pruebas: generetePayment(tokenPayment)
-- Producción: generetePayment(tokenPayment, accessToken)
+- Pruebas: `generetePayment(tokenPayment)`
+- Producción: `generetePayment(tokenPayment, accessToken)`
 
 **Consultar estado**
 
-- Pruebas: getStatusLinkPayment(tokenPayment)
-- Producción: getStatusLinkPayment(tokenPayment, accessToken)
+- Pruebas: `getStatusLinkPayment(tokenPayment)`
+- Producción: `getStatusLinkPayment(tokenPayment, accessToken)`
 
 **Obtener estado**
 
-- Pruebas: getPayment(query)
-- Producción: getPayment(query, accessToken)
+- Pruebas: `getPayment(query)`
+- Producción: `getPayment(query, accessToken)`
 
 **Revertir pago**
 
-- Pruebas: reversePayment(reference)
-- Producción: reversePayment(reference, accessToken)
+- Pruebas: `reversePayment(reference)`
+- Producción: `reversePayment(reference, accessToken)`
 
 **Obtener configuraciones**
 
-- Pruebas: getSettings()
-- Producción: getSettings(accessToken)
+- Pruebas: `getSettings()`
+- Producción: `getSettings(accessToken)`
