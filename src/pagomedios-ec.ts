@@ -113,10 +113,10 @@ function getCodeError (code: number) {
 
 type StatusPayment = 0 | 1 | 2 | 3
 const StatusPayment = [
-  { id: 0, description: 'PENDIENTE DE PAGO' },
-  { id: 1, description: 'AUTORIZADA' },
-  { id: 2, description: 'RECHAZADA' },
-  { id: 3, description: 'REVERSADA' },
+  { id: 0, description: 'Pendiente de pago' },
+  { id: 1, description: 'Autorizada' },
+  { id: 2, description: 'Rechazada' },
+  { id: 3, description: 'Reversada' },
 ]
 
 /**
@@ -229,6 +229,7 @@ export async function getStatusLinkPayment (id: string, token?: string) {
       authorizationCode: (res.data as Record<string, any>[])[0].auth_code,
       cardNumber: (res.data as Record<string, any>[])[0].display_number,
       cardHolder: (res.data as Record<string, any>[])[0].cardholder,
+      transactionDate: (res.data as Record<string, any>[])[0].payment_date,
     }
   }
 }

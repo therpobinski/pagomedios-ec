@@ -87,8 +87,9 @@ describe('obtener el estado de una transacción', () => {
       expect(res.data).toHaveProperty('authorizationCode')
       expect(res.data).toHaveProperty('cardNumber')
       expect(res.data).toHaveProperty('cardHolder')
+      expect(res.data).toHaveProperty('transactionDate')
       expect(res.data).toHaveProperty('status')
-      expect(res.data.status).toBe('AUTORIZADA')
+      expect(res.data.status).toBe('Autorizada')
     } catch (e) { errorConnection(e) }
   })
 
