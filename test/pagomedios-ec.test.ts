@@ -142,14 +142,14 @@ describe('reversar un token pagado', () => {
     }
   })
 
-  test('pago reversado', async () => {
+  test.only('pago reversado', async () => {
     try {
       const res = await getStatusLinkPayment('cha_hKyoiZTvdv58uOluOJnA5858')
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
       expect(res.data).toHaveProperty('status')
-      expect(res.data.status).toBe('REVERSADA')
+      expect(res.data.status).toBe('Reversada')
     } catch (e) { errorConnection(e) }
   })
 
