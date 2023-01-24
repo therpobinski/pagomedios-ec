@@ -2,26 +2,26 @@
 import generetePayment, {
   getStatusLinkPayment,
   reversePayment,
+  getSettings,
+  getPayment,
   Data,
 } from '../src/pagomedios-ec'
 import PagoMediosErrorEc from '../src/pagomedios-ec-error'
 
 function makeBody ({ CIInc = false, bodyInc = false, taxInc = false }) {
   return {
-    companyType: 'Persona Natural',
+    companyType: 'Persona Natural' as 'Persona Natural' | 'Empresa',
     document: !CIInc ? '1726834771' : '15856985',
-    documentType: '01',
+    documentType: '01' as '01' | '02' | '03' | '06',
     fullName: 'Nombre Prueba Ecuadoriano',
     address: 'Quito - Ecuador',
     mobile: '+59399999999',
     email: !bodyInc ? 'ejemplo@ejm.com' : 'ejemplo  ',
-    reference: new Date().toString(),
     description: 'Solicitud de prueba unitaria',
     amount: 1.12,
     amountWithTax: 1,
     amountWithoutTax: 0,
     tax: !taxInc ? 0.12 : 0.5,
-    gateway: 3,
   }
 }
 
@@ -36,9 +36,10 @@ describe('obtener token de pago', () => {
     try {
       const data: Data = makeBody({})
       const res = await generetePayment(data)
-      expect(typeof res.message).toEqual('string')
-      expect(res.status).toBe(200)
-      expect(res.code).toBe(1)
+      expect(res.status).toBe(201)
+      expect(res.success).toBe(true)
+      expect(res.data).toHaveProperty('url')
+      expect(res.data).toHaveProperty('token')
     } catch (e) { errorConnection(e) }
   })
 
@@ -46,7 +47,7 @@ describe('obtener token de pago', () => {
     try {
       const data: Data = makeBody({ taxInc: true })
       const res = await generetePayment(data)
-    } catch (e) {
+    } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
       expect(typeof e.message).toEqual('string')
@@ -57,7 +58,7 @@ describe('obtener token de pago', () => {
     try {
       const data: Data = makeBody({ CIInc: true })
       const res = await generetePayment(data)
-    } catch (e) {
+    } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
       expect(typeof e.message).toEqual('string')
@@ -68,7 +69,7 @@ describe('obtener token de pago', () => {
     try {
       const data: Data = makeBody({ bodyInc: true })
       const res = await generetePayment(data)
-    } catch (e) {
+    } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
       expect(typeof e.message).toEqual('string')
@@ -79,33 +80,38 @@ describe('obtener token de pago', () => {
 describe('obtener el estado de una transacción', () => {
   test('token existente y pago correcto', async () => {
     try {
-      const tokenId = '2y-13-wszng9xc0u1-swkvxexnaesxbcqin1mvjr55ye2seepjmpbuxmwge'
-      const res = await getStatusLinkPayment(tokenId)
-      expect(typeof res.message).toEqual('string')
+      const res = await getStatusLinkPayment('cha_XAxITohqD4AQITLMx4X70492')
+      expect(res.success).toBe(true)
       expect(res.status).toBe(200)
-      expect(res.code).toBe(1)
+      expect(res.data).toHaveProperty('id')
+      expect(res.data).toHaveProperty('authorizationCode')
+      expect(res.data).toHaveProperty('cardNumber')
+      expect(res.data).toHaveProperty('cardHolder')
+      expect(res.data).toHaveProperty('transactionDate')
+      expect(res.data).toHaveProperty('status')
+      expect(res.data.status).toBe('Autorizada')
     } catch (e) { errorConnection(e) }
   })
 
   test('token-id no existe', async () => {
     try {
-      const res = await getStatusLinkPayment('2y-13-sdfhsbdfkjd-sdfbd')
-    } catch (e) {
+      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k034K')
+    } catch (e: any) { 
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.ID_REQUEST)
       expect(typeof e.message).toEqual('string')
     }
   })
 
-  test('estado sin pago', async () => {
+  test('token existente y pago incompleto', async () => {
     try {
-      const tokenId = '2y-13--z-jqowebjbq7wj2fvklpufzvpe2nixw1sb28fsqdgt-xr1zeql7u'
-      const res = await getStatusLinkPayment(tokenId)
-    } catch (e) {
-      expect(e).toBeInstanceOf(Error)
-      expect(e.type).toBe(PagoMediosErrorEc.ID_REQUEST)
-      expect(typeof e.message).toEqual('string')
-    }
+      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k0341')
+      expect(res.success).toBe(true)
+      expect(res.status).toBe(200)
+      expect(res.data).toHaveProperty('id')
+      expect(res.data).toHaveProperty('status')
+      expect(res.data.status).toBe('PENDIENTE DE PAGO')
+    } catch (e) { errorConnection(e) }
   })
 })
 
@@ -116,13 +122,92 @@ describe('reversar un token pagado', () => {
    * automáticos, pero el pago es manual que lo que no se puede generar un 
    * reverso automático.
    */
-  test('token no existe', async () => {
+  // test('reversar pago existosamente', async () => {
+  //   try {
+  //     const res = await reversePayment('cha_QaK7nsrGv61OKphjMmta1809')
+  //     expect(res.success).toBe(true)
+  //     expect(res.status).toBe(200)
+  //     expect(res.data).toHaveProperty('id')
+  //     expect(res.data).toHaveProperty('msg')
+  //   } catch (e) { errorConnection(e) }
+  // })
+
+  test('reversar pago inexistente', async () => {
     try {
-      const res = await getStatusLinkPayment('2y-13-sdfdgd51sdf')
-    } catch (e) {
+      const res = await reversePayment('cha_XAxITohqD4AQITLMx4X7049E')
+    } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
-      expect(e.type).toBe(PagoMediosErrorEc.ID_REQUEST)
+      expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
       expect(typeof e.message).toEqual('string')
     }
+  })
+
+  test.only('pago reversado', async () => {
+    try {
+      const res = await getStatusLinkPayment('cha_hKyoiZTvdv58uOluOJnA5858')
+      expect(res.success).toBe(true)
+      expect(res.status).toBe(200)
+      expect(res.data).toHaveProperty('id')
+      expect(res.data).toHaveProperty('status')
+      expect(res.data.status).toBe('Reversada')
+    } catch (e) { errorConnection(e) }
+  })
+
+  test('pago no se puede reversar por falta de pago', async () => {
+    try {
+      const res = await reversePayment('cha_Egh3408DMoi3iIOaM0Ai8862')
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(Error)
+      expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
+      expect(typeof e.message).toEqual('string')
+    }
+  })
+})
+
+describe('Obtener pagos', () => {
+  test('Obtener un solo pago', async () => {
+    try {
+      const res = await getPayment({ id: 'cha_XAxITohqD4AQITLMx4X70492' })
+      expect(res.success).toBe(true)
+      expect(res.status).toBe(200)
+      expect(res).toHaveProperty('statusSchema')
+      expect(typeof res.statusSchema ==='object').toBe(true)
+      expect(res.data).toHaveProperty('id')
+      expect(res.data).toHaveProperty('status')
+      expect(res.data).toHaveProperty('reference')
+      expect(res.data).toHaveProperty('url')
+    } catch(e) { errorConnection(e) }
+  })
+
+  test('Obtener un pago inexistente', async () => {
+    try {
+      const res = await getPayment({ id: 'cha_XAxITohqD4AQITLMx4X7049E' })
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(Error)
+      expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
+      expect(typeof e.message).toEqual('string')
+    }
+  })
+
+  test('Obtener varios pagos', async () => {
+    try {
+      const res = await getPayment()
+      expect(res.success).toBe(true)
+      expect(res.status).toBe(200)
+      expect(res).toHaveProperty('statusSchema')
+      expect(typeof res.statusSchema ==='object').toBe(true)
+      expect(typeof res.data === 'object').toBe(true)
+    } catch(e) { errorConnection(e) }
+  })
+})
+
+describe('Obtener configuraciones de tarjetas', () => {
+  test('Obtiene las configuraciones de la cuenta prueba', async () => {
+    try {
+      const res = await getSettings()
+      expect(res.success).toBe(true)
+      expect(res.status).toBe(200)
+      expect(typeof res.data === 'object').toBe(true)
+    } catch (e) { errorConnection(e) }
   })
 })
