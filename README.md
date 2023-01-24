@@ -168,17 +168,17 @@ En caso de obtener vario, no es necesario enviar la `query.id`, puede enviar otr
   "data": [
     {
       "id": "cha_LfVziR4YH4AuK0IV3To125485",
-			"status": 0,
-			"reference": "PM-ryni1674061753",
-			"description": "Pago de prueba TOC",
-			....
+      "status": 0,
+      "reference": "PM-ryni1674061753",
+      "description": "Pago de prueba TOC",
+      ....
     },
     {
       "id": "cha_LfVziR4YH4AuK0IV3Tq12354",
-			"status": 1,
-			"reference": "PM-ryni1674014587",
-			"description": "Pago de prueba TOC",
-			....
+      "status": 1,
+      "reference": "PM-ryni1674014587",
+      "description": "Pago de prueba TOC",
+      ....
     }, ....
   ]
 }
@@ -224,23 +224,23 @@ const data = await getSettings(access-token)
   "status": 200,
   "data": [
 		{
-			"id": "car_Wr179mz4TWGMCVFZhl325610",
-			"name": "American Express",
-			"type": "Diferido con intereses",
-			"terms": [
-				3,
-				6,
-				9,
-				12
-			]
-		},
-		{
-			"id": "car_dCeedN85lKRNsnPHQmsi9762",
-			"name": "American Express",
-			"type": "Corriente",
-			"terms": []
-		},
-    ...
+      "id": "car_Wr179mz4TWGMCVFZhl325610",
+      "name": "American Express",
+      "type": "Diferido con intereses",
+      "terms": [
+      	3,
+      	6,
+      	9,
+      	12
+      ]
+    },
+    {
+      "id": "car_dCeedN85lKRNsnPHQmsi9762",
+      "name": "American Express",
+      "type": "Corriente",
+      "terms": []
+    },
+    ....
   ]
 }
 ```
