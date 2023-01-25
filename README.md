@@ -108,7 +108,7 @@ const data = await getStatusLinkPayment(id, access-token)
   "status": 200,
   "data": {
     "id": "cha_XAxITohqD4AQITLMx4X70492",
-    "status": "AUTORIZADA",
+    "status": "Autorizada",
     "authorizationCode": "478206",
     "cardNumber": "655732******1213",
     "cardHolder": "TOC SYSTEMS"
@@ -137,10 +137,10 @@ En caso de obtener uno solo, se envia en la `query` el `id` y se obtendrá un so
   "success": true,
   "status": 200,
   "statusSchema": [
-    { "id": 0, "description": "PENDIENTE DE PAGO" },
-    { "id": 1, "description": "AUTORIZADA" },
-    { "id": 2, "description": "RECHAZADA" },
-    { "id": 3, "description": "REVERSADA" },
+    { "id": 0, "description": "Pendiente de pago" },
+    { "id": 1, "description": "Autorizada" },
+    { "id": 2, "description": "Rechazada" },
+    { "id": 3, "description": "Reversada" },
   ],
   "data": {
     "id": "cha_LfVziR4YH4AuK0IV3To41753",
@@ -160,10 +160,10 @@ En caso de obtener vario, no es necesario enviar la `query.id`, puede enviar otr
   "success": true,
   "status": 200,
   "statusSchema": [
-    { "id": 0, "description": "PENDIENTE DE PAGO" },
-    { "id": 1, "description": "AUTORIZADA" },
-    { "id": 2, "description": "RECHAZADA" },
-    { "id": 3, "description": "REVERSADA" },
+    { "id": 0, "description": "Pendiente de pago" },
+    { "id": 1, "description": "Autorizada" },
+    { "id": 2, "description": "Rechazada" },
+    { "id": 3, "description": "Reversada" },
   ],
   "data": [
     {
@@ -223,7 +223,7 @@ const data = await getSettings(access-token)
   "success": true,
   "status": 200,
   "data": [
-		{
+    {
       "id": "car_Wr179mz4TWGMCVFZhl325610",
       "name": "American Express",
       "type": "Diferido con intereses",

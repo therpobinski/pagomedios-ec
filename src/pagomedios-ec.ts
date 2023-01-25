@@ -152,11 +152,11 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
             )
           }
           resolve(responseJson)
-        } catch (err) {
-          throw new PagoMediosErrorEc(
-            'Es posible que el path ingresado no sea incorrecto',
+        } catch (err: any) {
+          reject(new PagoMediosErrorEc(
+            err.message || 'Es posible que el path ingresado no sea incorrecto',
             PagoMediosErrorEc.PATH_INCORRECT,
-          )
+          ))
         }
       })
     })
