@@ -124,15 +124,14 @@ const StatusPayment = [
  * tipo de petición `application/json`.
 */
 async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
-  const body = args.body ? JSON.stringify(args.body as any) : undefined
   const options = {
     host: ENDPOINT,
     path: args.path,
     method: args.method,
+    encoding: 'utf-8',
     headers: {
       Authorization: `Bearer ${args.token ? args.token : tokenDev}`,
-      'Content-Length': body ? body.length : 0,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "text/html; charset=utf-8"
     }
   }
   if (args.query) {
@@ -167,7 +166,9 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
         PagoMediosErrorEc.TYPE_CONNECTION,
       ))
     })
-    if (body) { req.write(body) }
+    if (args.body) {
+      req.write(JSON.stringify(args.body as any))
+    }
     req.end()
   })
 }

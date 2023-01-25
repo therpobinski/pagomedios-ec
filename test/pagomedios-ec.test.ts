@@ -13,7 +13,7 @@ function makeBody ({ CIInc = false, bodyInc = false, taxInc = false }) {
     companyType: 'Persona Natural' as 'Persona Natural' | 'Empresa',
     document: !CIInc ? '1726834771' : '15856985',
     documentType: '01' as '01' | '02' | '03' | '06',
-    fullName: 'Nombre Prueba Ecuadoriano',
+    fullName: 'Nombré Prueba Ecuadoriano',
     address: 'Quito - Ecuador',
     mobile: '+59399999999',
     email: !bodyInc ? 'ejemplo@ejm.com' : 'ejemplo  ',
