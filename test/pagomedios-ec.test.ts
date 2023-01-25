@@ -110,7 +110,7 @@ describe('obtener el estado de una transacción', () => {
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
       expect(res.data).toHaveProperty('status')
-      expect(res.data.status).toBe('PENDIENTE DE PAGO')
+      expect(res.data.status).toBe('Pendiente de pago')
     } catch (e) { errorConnection(e) }
   })
 })
@@ -142,7 +142,7 @@ describe('reversar un token pagado', () => {
     }
   })
 
-  test.only('pago reversado', async () => {
+  test('pago reversado', async () => {
     try {
       const res = await getStatusLinkPayment('cha_hKyoiZTvdv58uOluOJnA5858')
       expect(res.success).toBe(true)
