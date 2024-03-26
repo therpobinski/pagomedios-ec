@@ -3,7 +3,7 @@ import { request } from 'https'
 import PagoMediosErrorEc from './pagomedios-ec-error'
 
 const ENDPOINT = 'api.abitmedia.cloud'
-const tokenDev = '6tyisfsa3abtoqtkfenmz7c0-fphjgt1k5mepyiyzixecti-u69wlup2emsi4scakgowl'
+const tokenDev = 'oytrwd8acktsznje458qilp6dogypfxvwgaht69zq8rto4zkxqhxk5i-le6akkd8-zgrk'
 
 /**
  * Campos especificados en:
@@ -15,7 +15,7 @@ const tokenDev = '6tyisfsa3abtoqtkfenmz7c0-fphjgt1k5mepyiyzixecti-u69wlup2emsi4s
  * El `amount` debera ser la suma de `amountWithTax` + `amountWithoutTax` + `tax`
  * `amountWithTax` debera ser el subtotal sin IVA
  * `amountWithoutTax` debera ser la sumatoria de productos que no tengan IVA
- * `tax` debera ser el IVA (12%)
+ * `tax` debera ser el IVA (##%)
 */
 export interface Data {
   integration?: boolean
@@ -27,10 +27,9 @@ export interface Data {
   mobile: string
   email: string
   description: string
-  amount: number
   amountWithTax: number
   amountWithoutTax: number
-  tax: number
+  tax: 0.05 | 0.08 | 0.13 | 0.15
   notifyUrl?: string
   generateInvoice?: 0 | 1
   customValue?: string
@@ -90,10 +89,14 @@ function formatBody (data: Data): Record<string, any> {
     },
     generate_invoice: data.generateInvoice || 0,
     description: data.description,
-    amount: data.amount,
+    amount: parseFloat(
+      (
+        (data.tax * data.amountWithTax) + data.amountWithTax
+      ).toFixed(2)
+    ),
     amount_with_tax: data.amountWithTax,
     amount_without_tax: data.amountWithoutTax,
-    tax_value: data.tax,
+    tax_value: parseFloat((data.tax * data.amountWithTax).toFixed(2)),
     settings: data.settings || [],
     notify_url: data.notifyUrl || null,
     custom_value: data.customValue || null,
@@ -132,7 +135,7 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
     headers: {
       Authorization: `Bearer ${args.token ? args.token : tokenDev}`,
       "Content-Type": "text/html; charset=utf-8"
-    }
+    },
   }
   if (args.query) {
     options.path += `?${new URLSearchParams(args.query).toString()}`
@@ -178,6 +181,12 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
  * no se ejecutara con normalidad la petición y saltará un error.
 */
 export default async function (data: Data, token?: string) {
+  if (![0.05, 0.08, 0.13, 0.15, 0.12].includes(data.tax)) {
+    throw new PagoMediosErrorEc(
+      'Este impuesto no esta permitido',
+      PagoMediosErrorEc.TAX_INCORRECT,
+    )
+  }
   const res = await instanceAxios({
     body: formatBody(data),
     token,

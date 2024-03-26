@@ -6,6 +6,7 @@ class PagoMediosErrorEc extends Error {
   static TYPE_STATUS = 4
   static TYPE_BODY = 5
   static ID_REQUEST = 5
+  static TAX_INCORRECT = 6
   static PATH_INCORRECT = 7
   static NOT_FOUND = 404
   private type: number
