@@ -180,7 +180,7 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
  * no se ejecutara con normalidad la petición y saltará un error.
 */
 export default async function (data: Data, token: string) {
-  if (![0.05, 0.08, 0.13, 0.15].includes(data.tax)) {
+  if (![0.05, 0.08, 0.13, 0.15, 0.12].includes(data.tax)) {
     throw new PagoMediosErrorEc(
       'Este impuesto no esta permitido',
       PagoMediosErrorEc.TAX_INCORRECT,

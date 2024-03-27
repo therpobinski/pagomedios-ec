@@ -33,7 +33,7 @@ function errorConnection(e: any) {
 describe('obtener token de pago', () => {
   test('solicitud correcta con datos validados', async () => {
     try {
-      const data: Data = makeBody({})
+      const data: Data = makeBody({ tax: 0.12 })
       const res = await generetePayment(data, token)
       expect(res.status).toBe(201)
       expect(res.success).toBe(true)
