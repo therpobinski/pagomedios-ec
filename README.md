@@ -35,7 +35,7 @@ MIT
 Este es un ejemplo simple para la creación de una solicitud de pago, para esto será necesario construir el `BODY` detallado a continuación en formato `JSON` (Parámetros POST).
 El segundo parámetro es el `access-token`, el cual se envia en caso de querer hacerlo en producción o pruebas.
 * El `amount` que se enviaba en versiones anteriores, ahora se calculará de manera automática, este se calcula de la siguiente manera:
-`amount = amountWithoutTax + ((amountWithTax * tax) + amountWithTax)`
+`amount = amountWithoutTax + ((amountWithTax * tax) + amountWithTax)` y con 2 decimales que son solicitados por el SRI.
 
 ```js
 import generetePayment from 'pagomedios-ec'

@@ -121,15 +121,15 @@ describe('reversar un token pagado', () => {
    * automáticos, pero el pago es manual que lo que no se puede generar un 
    * reverso automático.
    */
-  test('reversar pago existosamente', async () => {
-    try {
-      const res = await reversePayment('cha_2RjMhp1JtxLGW2zd6czA5765', token)
-      expect(res.success).toBe(true)
-      expect(res.status).toBe(200)
-      expect(res.data).toHaveProperty('id')
-      expect(res.data).toHaveProperty('msg')
-    } catch (e) { errorConnection(e) }
-  })
+  // test('reversar pago existosamente', async () => {
+  //   try {
+  //     const res = await reversePayment('cha_2RjMhp1JtxLGW2zd6czA5765', token)
+  //     expect(res.success).toBe(true)
+  //     expect(res.status).toBe(200)
+  //     expect(res.data).toHaveProperty('id')
+  //     expect(res.data).toHaveProperty('msg')
+  //   } catch (e) { errorConnection(e) }
+  // })
 
   test('reversar pago inexistente', async () => {
     try {
