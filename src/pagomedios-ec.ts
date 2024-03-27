@@ -33,6 +33,8 @@ export interface Data {
   generateInvoice?: 0 | 1
   customValue?: string
   settings?: string[]
+  has_cash?: 0 | 1
+  has_cards?: 0 | 1
 }
 
 /**
@@ -90,7 +92,8 @@ function formatBody (data: Data): Record<string, any> {
     description: data.description,
     amount: parseFloat(
       (
-        (data.tax * data.amountWithTax) + data.amountWithTax
+        ((data.tax * data.amountWithTax) + data.amountWithTax) +
+          data.amountWithoutTax
       ).toFixed(2)
     ),
     amount_with_tax: data.amountWithTax,
@@ -99,6 +102,8 @@ function formatBody (data: Data): Record<string, any> {
     settings: data.settings || [],
     notify_url: data.notifyUrl || null,
     custom_value: data.customValue || null,
+    has_cash: data.has_cards || 0,
+    has_cards: data.has_cash || 1,
   }
 }
 
@@ -180,7 +185,7 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
  * no se ejecutara con normalidad la petición y saltará un error.
 */
 export default async function (data: Data, token: string) {
-  if (![0.05, 0.08, 0.13, 0.15, 0.12].includes(data.tax)) {
+  if (![0.05, 0.08, 0.13, 0.15].includes(data.tax)) {
     throw new PagoMediosErrorEc(
       'Este impuesto no esta permitido',
       PagoMediosErrorEc.TAX_INCORRECT,

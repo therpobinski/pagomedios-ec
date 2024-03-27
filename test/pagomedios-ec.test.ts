@@ -18,8 +18,8 @@ function makeBody ({ CIInc = false, bodyInc = false, tax = 0.15 }) {
     mobile: '+59399999999',
     email: !bodyInc ? 'ejemplo@ejm.com' : 'ejemplo  ',
     description: 'Solicitud de prueba unitaria',
-    amountWithTax: 1,
-    amountWithoutTax: 0,
+    amountWithTax: 0.6,
+    amountWithoutTax: 0.1,
     tax: tax as 0.05 | 0.08 | 0.13 | 0.15,
   }
 }
@@ -33,7 +33,7 @@ function errorConnection(e: any) {
 describe('obtener token de pago', () => {
   test('solicitud correcta con datos validados', async () => {
     try {
-      const data: Data = makeBody({ tax: 0.12 })
+      const data: Data = makeBody({})
       const res = await generetePayment(data, token)
       expect(res.status).toBe(201)
       expect(res.success).toBe(true)
