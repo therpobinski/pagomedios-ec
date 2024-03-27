@@ -1,7 +1,7 @@
 # pagomedios-ec
 
 [![npm version](https://badge.fury.io/js/pagomedios-ec.svg)](https://badge.fury.io/js/pagomedios-ec)
-![Testing](https://github.com/therpobinski/pagomedios-ec/workflows/Testing/badge.svg)
+<!-- ![Testing](https://github.com/therpobinski/pagomedios-ec/workflows/Testing/badge.svg) -->
 
 Es una libreria para facilitar la integración con 
 [Pago Medios Ecuador](https://services.abitmedia.cloud/pagomedios-v2), la 
@@ -18,9 +18,8 @@ Estas son las funciones que se encuentran integradas en la actual versión.
   - Obtener las configuraciones de la empresa
 
 ## Entornos integrados
-
-  - **Prueba:** En este caso, no sera necesario enviar en cada método a llamar el token proporcionado por PagoMediosEc.
-  - **Producción:** Será necesario enviar como segundo parámetro el token proporcionado por PagoMediosEc.
+  Es necesario solicitar el `token` tanto de pruebas como de `producción` para cada comercio que necesite integrarse.
+  - **Producción y Pruebas:** Será necesario enviar el parámetro `access-token` proporcionado por PagoMediosEc.
 
 ## Instalación
 
@@ -34,7 +33,7 @@ MIT
 
 ## Crear solicitud de pago
 Este es un ejemplo simple para la creación de una solicitud de pago, para esto será necesario construir el `BODY` detallado a continuación en formato `JSON` (Parámetros POST).
-El segundo parámetro es el `token`, el cual se envia en caso de querer hacerlo en producción, y si no se envia se tomará el `token` de pruebas.
+El segundo parámetro es el `access-token`, el cual se envia en caso de querer hacerlo en producción o pruebas.
 
 ```js
 import generetePayment from 'pagomedios-ec'
@@ -50,10 +49,9 @@ type body = {
   mobile: string
   email: string
   description: string
-  amount: number
   amountWithTax: number
   amountWithoutTax: number
-  tax: number
+  tax: 0.05 | 0.08 | 0.13 | 0.15
   notifyUrl?: string
   generateInvoice?: 0 | 1
   customValue?: string
@@ -93,7 +91,7 @@ const data = await generetePayment(body, access-token)
  
  Se envia como parámetros:
   * `id`: Es el `tokenID` que se obtiene en la `generatePayment`
-  * `token`: En caso de ser en producción se envia el `token` proporcionado por pago medios, caso contrario no se envia nada; por defecto toma el `token` de pruebas.
+  * `access-token`: En caso de ser en producción se envia el `token` proporcionado por pago medios.
 
 ```js
 import { getStatusLinkPayment } from 'pagomedios-ec'
@@ -118,14 +116,14 @@ const data = await getStatusLinkPayment(id, access-token)
 
 ## Obtener una o varias solicitudes de pagos
 Se envia como parámetros:
-  * `query`: Es un objeto, el cual será el filtro para obtener los pago que se necesiten. Este puede enviar un `id` con el `tokenID` del pago. NO es obligación enviar este parámetro. Puede ser `undefined`
-  * `token`: En caso de ser en producción se envia el `token` proporcionado por pago medios, caso contrario no se envia nada; por defecto toma el `token` de pruebas.
+  * `access-token`: En caso de ser en producción se envia el `token` proporcionado por pago medios.
+  * `query`: Es un objeto, el cual será el filtro para obtener los pago que se necesiten. Este puede enviar un `id` con el `tokenID` del pago. No es obligación enviar este parámetro. Puede ser `undefined`
 
 ```js
 import { getPayment } from 'pagomedios-ec'
 const access-token = '${TuTokenAccess-Proporcionado-por-PagoMediosEc}'
 const query = { id: 'cha_XAxITohqD4AQITLMx4X70492' }
-const data = await getPayment(query, access-token)
+const data = await getPayment(access-token, query)
 ```
 
 ***Ejemplo de respuesta***
@@ -188,7 +186,7 @@ En caso de obtener vario, no es necesario enviar la `query.id`, puede enviar otr
 
 Se envia como parámetro:
   * `id`: Es el `TokenID` que se generá en la creación de la solicitud de pago.
-  * `token`: En caso de ser en producción se envia el `token` proporcionado por pago medios, caso contrario no se envia nada; por defecto toma el `token` de pruebas.
+  * `access-token`: En caso de ser en producción se envia el `token` proporcionado por pago medios.
 
 ```js
 import { reversePayment } from 'pagomedios-ec'
@@ -247,25 +245,20 @@ const data = await getSettings(access-token)
 
 **Crear pago**
 
-- Pruebas: `generetePayment(tokenPayment)`
-- Producción: `generetePayment(tokenPayment, accessToken)`
+- `generetePayment(tokenPayment, accessToken)`
 
 **Consultar estado**
 
-- Pruebas: `getStatusLinkPayment(tokenPayment)`
-- Producción: `getStatusLinkPayment(tokenPayment, accessToken)`
+- `getStatusLinkPayment(tokenPayment, accessToken)`
 
 **Obtener estado**
 
-- Pruebas: `getPayment(query)`
-- Producción: `getPayment(query, accessToken)`
+- `getPayment(accessToken, query)`
 
 **Revertir pago**
 
-- Pruebas: `reversePayment(tokenPayment)`
-- Producción: `reversePayment(tokenPayment, accessToken)`
+- `reversePayment(tokenPayment, accessToken)`
 
 **Obtener configuraciones**
 
-- Pruebas: `getSettings()`
-- Producción: `getSettings(accessToken)`
+- `getSettings(accessToken)`

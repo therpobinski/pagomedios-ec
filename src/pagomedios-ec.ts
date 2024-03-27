@@ -3,7 +3,6 @@ import { request } from 'https'
 import PagoMediosErrorEc from './pagomedios-ec-error'
 
 const ENDPOINT = 'api.abitmedia.cloud'
-const tokenDev = 'oytrwd8acktsznje458qilp6dogypfxvwgaht69zq8rto4zkxqhxk5i-le6akkd8-zgrk'
 
 /**
  * Campos especificados en:
@@ -50,7 +49,7 @@ export interface Data {
 export interface OptionsRequest {
   body?: any
   path: string
-  token?: string
+  token: string
   method: 'GET' | 'POST'
   query?: { [key: string]: any }
 }
@@ -133,7 +132,7 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
     method: args.method,
     encoding: 'utf-8',
     headers: {
-      Authorization: `Bearer ${args.token ? args.token : tokenDev}`,
+      Authorization: `Bearer ${args.token}`,
       "Content-Type": "text/html; charset=utf-8"
     },
   }
@@ -180,8 +179,8 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
  * Sera necesario enviar datos correctos y calculos precisos, caso contrario
  * no se ejecutara con normalidad la petición y saltará un error.
 */
-export default async function (data: Data, token?: string) {
-  if (![0.05, 0.08, 0.13, 0.15, 0.12].includes(data.tax)) {
+export default async function (data: Data, token: string) {
+  if (![0.05, 0.08, 0.13, 0.15].includes(data.tax)) {
     throw new PagoMediosErrorEc(
       'Este impuesto no esta permitido',
       PagoMediosErrorEc.TAX_INCORRECT,
@@ -210,7 +209,7 @@ export default async function (data: Data, token?: string) {
  * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
 */
-export async function getStatusLinkPayment (id: string, token?: string) {
+export async function getStatusLinkPayment (id: string, token: string) {
   const res = await instanceAxios({
     token,
     method: 'GET',
@@ -250,8 +249,8 @@ export async function getStatusLinkPayment (id: string, token?: string) {
  * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
 */
-export async function reversePayment (id: string, token?: string) {
-  const { data } = await getPayment({ id }, token)
+export async function reversePayment (id: string, token: string) {
+  const { data } = await getPayment(token, { id })
   const reference = (data as Record<string, any>)?.reference
   const res = await instanceAxios({
     token,
@@ -277,7 +276,7 @@ export async function reversePayment (id: string, token?: string) {
  * * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
  */
-export async function getPayment (query?: Record<string, any>, token?: string) {
+export async function getPayment (token: string, query?: Record<string, any>) {
   const res = await instanceAxios({
     token,
     method: 'GET',
@@ -311,7 +310,7 @@ export async function getPayment (query?: Record<string, any>, token?: string) {
  * * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
  */
-export async function getSettings (token?: string) {
+export async function getSettings (token: string) {
   const res = await instanceAxios({
     token,
     method: 'GET',

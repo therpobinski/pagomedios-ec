@@ -1,4 +1,4 @@
-
+const token = process.env.TOKEN || 'error-sin-token'
 import generetePayment, {
   getStatusLinkPayment,
   reversePayment,
@@ -31,10 +31,10 @@ function errorConnection(e: any) {
 }
 
 describe('obtener token de pago', () => {
-  test('solicitud correcta con datos validados', async () => { //****** */
+  test('solicitud correcta con datos validados', async () => {
     try {
-      const data: Data = makeBody({ tax: 0.12 })
-      const res = await generetePayment(data)
+      const data: Data = makeBody({})
+      const res = await generetePayment(data, token)
       expect(res.status).toBe(201)
       expect(res.success).toBe(true)
       expect(res.data).toHaveProperty('url')
@@ -45,7 +45,7 @@ describe('obtener token de pago', () => {
   test('solicitud erronea, con impuestos erroneos', async () => {
     try {
       const data: Data = makeBody({ tax: 0.12 })
-      const res = await generetePayment(data)
+      const res = await generetePayment(data, token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TAX_INCORRECT)
@@ -56,7 +56,7 @@ describe('obtener token de pago', () => {
   test('solicitud erronea con cédula incorrecta', async () => {
     try {
       const data: Data = makeBody({ CIInc: true })
-      const res = await generetePayment(data)
+      const res = await generetePayment(data, token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
@@ -67,7 +67,7 @@ describe('obtener token de pago', () => {
   test('solicitud erronea, Data incorrecta', async () => {
     try {
       const data: Data = makeBody({ bodyInc: true })
-      const res = await generetePayment(data)
+      const res = await generetePayment(data, token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
@@ -77,9 +77,9 @@ describe('obtener token de pago', () => {
 })
 
 describe('obtener el estado de una transacción', () => {
-  test('token existente y pago correcto', async () => { //****** */
+  test('token existente y pago correcto', async () => {
     try {
-      const res = await getStatusLinkPayment('sdfsdf')
+      const res = await getStatusLinkPayment('cha__wviPIw4Xae1WQCnheVz5179', token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
@@ -89,15 +89,12 @@ describe('obtener el estado de una transacción', () => {
       expect(res.data).toHaveProperty('transactionDate')
       expect(res.data).toHaveProperty('status')
       expect(res.data.status).toBe('Autorizada')
-    } catch (e) {
-      console.log(e)
-      errorConnection(e)
-    }
+    } catch (e) { errorConnection(e) }
   })
 
   test('token-id no existe', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k034K')
+      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k034K', token)
     } catch (e: any) { 
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.ID_REQUEST)
@@ -107,7 +104,7 @@ describe('obtener el estado de una transacción', () => {
 
   test('token existente y pago incompleto', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_aRbp1W3Bt9XkFyEAsmUR4067')
+      const res = await getStatusLinkPayment('cha_aRbp1W3Bt9XkFyEAsmUR4067', token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
@@ -124,19 +121,19 @@ describe('reversar un token pagado', () => {
    * automáticos, pero el pago es manual que lo que no se puede generar un 
    * reverso automático.
    */
-  // test('reversar pago existosamente', async () => {
-  //   try {
-  //     const res = await reversePayment('cha_QaK7nsrGv61OKphjMmta1809')
-  //     expect(res.success).toBe(true)
-  //     expect(res.status).toBe(200)
-  //     expect(res.data).toHaveProperty('id')
-  //     expect(res.data).toHaveProperty('msg')
-  //   } catch (e) { errorConnection(e) }
-  // })
+  test('reversar pago existosamente', async () => {
+    try {
+      const res = await reversePayment('cha_2RjMhp1JtxLGW2zd6czA5765', token)
+      expect(res.success).toBe(true)
+      expect(res.status).toBe(200)
+      expect(res.data).toHaveProperty('id')
+      expect(res.data).toHaveProperty('msg')
+    } catch (e) { errorConnection(e) }
+  })
 
   test('reversar pago inexistente', async () => {
     try {
-      const res = await reversePayment('cha_aRbp1W3Bt9XkFyEAsmUR0000')
+      const res = await reversePayment('cha_aRbp1W3Bt9XkFyEAsmUR0000', token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -144,9 +141,9 @@ describe('reversar un token pagado', () => {
     }
   })
 
-  test('pago reversado', async () => { //****** */
+  test('pago reversado', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_hKyoiZTvdv58uOluOJnA5858')
+      const res = await getStatusLinkPayment('cha_2RjMhp1JtxLGW2zd6czA5765', token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
@@ -157,7 +154,7 @@ describe('reversar un token pagado', () => {
 
   test('pago no se puede reversar por falta de pago', async () => {
     try {
-      const res = await reversePayment('cha_aRbp1W3Bt9XkFyEAsmUR4067')
+      const res = await reversePayment('cha_aRbp1W3Bt9XkFyEAsmUR4067', token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -169,7 +166,7 @@ describe('reversar un token pagado', () => {
 describe('Obtener pagos', () => {
   test('Obtener un solo pago', async () => {
     try {
-      const res = await getPayment({ id: 'cha_aRbp1W3Bt9XkFyEAsmUR4067' })
+      const res = await getPayment(token, { id: 'cha_aRbp1W3Bt9XkFyEAsmUR4067' })
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res).toHaveProperty('statusSchema')
@@ -183,7 +180,7 @@ describe('Obtener pagos', () => {
 
   test('Obtener un pago inexistente', async () => {
     try {
-      const res = await getPayment({ id: 'cha_XAxITohqD4AQITLMx4X7049E' })
+      const res = await getPayment(token, { id: 'cha_XAxITohqD4AQITLMx4X7049E' })
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -193,7 +190,7 @@ describe('Obtener pagos', () => {
 
   test('Obtener varios pagos', async () => {
     try {
-      const res = await getPayment()
+      const res = await getPayment(token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res).toHaveProperty('statusSchema')
@@ -206,7 +203,7 @@ describe('Obtener pagos', () => {
 describe('Obtener configuraciones de tarjetas', () => {
   test('Obtiene las configuraciones de la cuenta prueba', async () => {
     try {
-      const res = await getSettings()
+      const res = await getSettings(token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(typeof res.data === 'object').toBe(true)
