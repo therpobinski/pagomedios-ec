@@ -1,4 +1,4 @@
-
+const token = process.env.TOKEN || 'error-sin-token'
 import generetePayment, {
   getStatusLinkPayment,
   reversePayment,
@@ -8,7 +8,7 @@ import generetePayment, {
 } from '../src/pagomedios-ec'
 import PagoMediosErrorEc from '../src/pagomedios-ec-error'
 
-function makeBody ({ CIInc = false, bodyInc = false, taxInc = false }) {
+function makeBody ({ CIInc = false, bodyInc = false, tax = 0.15 }) {
   return {
     companyType: 'Persona Natural' as 'Persona Natural' | 'Empresa',
     document: !CIInc ? '1726834771' : '15856985',
@@ -18,10 +18,9 @@ function makeBody ({ CIInc = false, bodyInc = false, taxInc = false }) {
     mobile: '+59399999999',
     email: !bodyInc ? 'ejemplo@ejm.com' : 'ejemplo  ',
     description: 'Solicitud de prueba unitaria',
-    amount: 1.12,
     amountWithTax: 1,
     amountWithoutTax: 0,
-    tax: !taxInc ? 0.12 : 0.5,
+    tax: tax as 0.05 | 0.08 | 0.13 | 0.15,
   }
 }
 
@@ -35,7 +34,7 @@ describe('obtener token de pago', () => {
   test('solicitud correcta con datos validados', async () => {
     try {
       const data: Data = makeBody({})
-      const res = await generetePayment(data)
+      const res = await generetePayment(data, token)
       expect(res.status).toBe(201)
       expect(res.success).toBe(true)
       expect(res.data).toHaveProperty('url')
@@ -43,13 +42,13 @@ describe('obtener token de pago', () => {
     } catch (e) { errorConnection(e) }
   })
 
-  test('solicitud erronea, con calculos erroneos', async () => {
+  test('solicitud erronea, con impuestos erroneos', async () => {
     try {
-      const data: Data = makeBody({ taxInc: true })
-      const res = await generetePayment(data)
+      const data: Data = makeBody({ tax: 0.12 })
+      const res = await generetePayment(data, token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
-      expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
+      expect(e.type).toBe(PagoMediosErrorEc.TAX_INCORRECT)
       expect(typeof e.message).toEqual('string')
     }
   })
@@ -57,7 +56,7 @@ describe('obtener token de pago', () => {
   test('solicitud erronea con cédula incorrecta', async () => {
     try {
       const data: Data = makeBody({ CIInc: true })
-      const res = await generetePayment(data)
+      const res = await generetePayment(data, token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
@@ -68,7 +67,7 @@ describe('obtener token de pago', () => {
   test('solicitud erronea, Data incorrecta', async () => {
     try {
       const data: Data = makeBody({ bodyInc: true })
-      const res = await generetePayment(data)
+      const res = await generetePayment(data, token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.TYPE_BODY)
@@ -80,7 +79,7 @@ describe('obtener token de pago', () => {
 describe('obtener el estado de una transacción', () => {
   test('token existente y pago correcto', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_XAxITohqD4AQITLMx4X70492')
+      const res = await getStatusLinkPayment('cha__wviPIw4Xae1WQCnheVz5179', token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
@@ -95,7 +94,7 @@ describe('obtener el estado de una transacción', () => {
 
   test('token-id no existe', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k034K')
+      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k034K', token)
     } catch (e: any) { 
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.ID_REQUEST)
@@ -105,7 +104,7 @@ describe('obtener el estado de una transacción', () => {
 
   test('token existente y pago incompleto', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_vghUgBUvdXQwd_FsBb1k0341')
+      const res = await getStatusLinkPayment('cha_aRbp1W3Bt9XkFyEAsmUR4067', token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
@@ -124,7 +123,7 @@ describe('reversar un token pagado', () => {
    */
   // test('reversar pago existosamente', async () => {
   //   try {
-  //     const res = await reversePayment('cha_QaK7nsrGv61OKphjMmta1809')
+  //     const res = await reversePayment('cha_2RjMhp1JtxLGW2zd6czA5765', token)
   //     expect(res.success).toBe(true)
   //     expect(res.status).toBe(200)
   //     expect(res.data).toHaveProperty('id')
@@ -134,7 +133,7 @@ describe('reversar un token pagado', () => {
 
   test('reversar pago inexistente', async () => {
     try {
-      const res = await reversePayment('cha_XAxITohqD4AQITLMx4X7049E')
+      const res = await reversePayment('cha_aRbp1W3Bt9XkFyEAsmUR0000', token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -144,7 +143,7 @@ describe('reversar un token pagado', () => {
 
   test('pago reversado', async () => {
     try {
-      const res = await getStatusLinkPayment('cha_hKyoiZTvdv58uOluOJnA5858')
+      const res = await getStatusLinkPayment('cha_2RjMhp1JtxLGW2zd6czA5765', token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res.data).toHaveProperty('id')
@@ -155,7 +154,7 @@ describe('reversar un token pagado', () => {
 
   test('pago no se puede reversar por falta de pago', async () => {
     try {
-      const res = await reversePayment('cha_Egh3408DMoi3iIOaM0Ai8862')
+      const res = await reversePayment('cha_aRbp1W3Bt9XkFyEAsmUR4067', token)
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -167,7 +166,7 @@ describe('reversar un token pagado', () => {
 describe('Obtener pagos', () => {
   test('Obtener un solo pago', async () => {
     try {
-      const res = await getPayment({ id: 'cha_XAxITohqD4AQITLMx4X70492' })
+      const res = await getPayment(token, { id: 'cha_aRbp1W3Bt9XkFyEAsmUR4067' })
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res).toHaveProperty('statusSchema')
@@ -181,7 +180,7 @@ describe('Obtener pagos', () => {
 
   test('Obtener un pago inexistente', async () => {
     try {
-      const res = await getPayment({ id: 'cha_XAxITohqD4AQITLMx4X7049E' })
+      const res = await getPayment(token, { id: 'cha_XAxITohqD4AQITLMx4X7049E' })
     } catch (e: any) {
       expect(e).toBeInstanceOf(Error)
       expect(e.type).toBe(PagoMediosErrorEc.NOT_FOUND)
@@ -191,7 +190,7 @@ describe('Obtener pagos', () => {
 
   test('Obtener varios pagos', async () => {
     try {
-      const res = await getPayment()
+      const res = await getPayment(token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(res).toHaveProperty('statusSchema')
@@ -204,7 +203,7 @@ describe('Obtener pagos', () => {
 describe('Obtener configuraciones de tarjetas', () => {
   test('Obtiene las configuraciones de la cuenta prueba', async () => {
     try {
-      const res = await getSettings()
+      const res = await getSettings(token)
       expect(res.success).toBe(true)
       expect(res.status).toBe(200)
       expect(typeof res.data === 'object').toBe(true)

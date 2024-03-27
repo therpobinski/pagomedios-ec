@@ -3,7 +3,6 @@ import { request } from 'https'
 import PagoMediosErrorEc from './pagomedios-ec-error'
 
 const ENDPOINT = 'api.abitmedia.cloud'
-const tokenDev = '6tyisfsa3abtoqtkfenmz7c0-fphjgt1k5mepyiyzixecti-u69wlup2emsi4scakgowl'
 
 /**
  * Campos especificados en:
@@ -15,7 +14,7 @@ const tokenDev = '6tyisfsa3abtoqtkfenmz7c0-fphjgt1k5mepyiyzixecti-u69wlup2emsi4s
  * El `amount` debera ser la suma de `amountWithTax` + `amountWithoutTax` + `tax`
  * `amountWithTax` debera ser el subtotal sin IVA
  * `amountWithoutTax` debera ser la sumatoria de productos que no tengan IVA
- * `tax` debera ser el IVA (12%)
+ * `tax` debera ser el IVA (##%)
 */
 export interface Data {
   integration?: boolean
@@ -27,10 +26,9 @@ export interface Data {
   mobile: string
   email: string
   description: string
-  amount: number
   amountWithTax: number
   amountWithoutTax: number
-  tax: number
+  tax: 0.05 | 0.08 | 0.13 | 0.15
   notifyUrl?: string
   generateInvoice?: 0 | 1
   customValue?: string
@@ -51,7 +49,7 @@ export interface Data {
 export interface OptionsRequest {
   body?: any
   path: string
-  token?: string
+  token: string
   method: 'GET' | 'POST'
   query?: { [key: string]: any }
 }
@@ -90,10 +88,14 @@ function formatBody (data: Data): Record<string, any> {
     },
     generate_invoice: data.generateInvoice || 0,
     description: data.description,
-    amount: data.amount,
+    amount: parseFloat(
+      (
+        (data.tax * data.amountWithTax) + data.amountWithTax
+      ).toFixed(2)
+    ),
     amount_with_tax: data.amountWithTax,
     amount_without_tax: data.amountWithoutTax,
-    tax_value: data.tax,
+    tax_value: parseFloat((data.tax * data.amountWithTax).toFixed(2)),
     settings: data.settings || [],
     notify_url: data.notifyUrl || null,
     custom_value: data.customValue || null,
@@ -130,9 +132,9 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
     method: args.method,
     encoding: 'utf-8',
     headers: {
-      Authorization: `Bearer ${args.token ? args.token : tokenDev}`,
+      Authorization: `Bearer ${args.token}`,
       "Content-Type": "text/html; charset=utf-8"
-    }
+    },
   }
   if (args.query) {
     options.path += `?${new URLSearchParams(args.query).toString()}`
@@ -177,7 +179,13 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
  * Sera necesario enviar datos correctos y calculos precisos, caso contrario
  * no se ejecutara con normalidad la petición y saltará un error.
 */
-export default async function (data: Data, token?: string) {
+export default async function (data: Data, token: string) {
+  if (![0.05, 0.08, 0.13, 0.15].includes(data.tax)) {
+    throw new PagoMediosErrorEc(
+      'Este impuesto no esta permitido',
+      PagoMediosErrorEc.TAX_INCORRECT,
+    )
+  }
   const res = await instanceAxios({
     body: formatBody(data),
     token,
@@ -201,7 +209,7 @@ export default async function (data: Data, token?: string) {
  * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
 */
-export async function getStatusLinkPayment (id: string, token?: string) {
+export async function getStatusLinkPayment (id: string, token: string) {
   const res = await instanceAxios({
     token,
     method: 'GET',
@@ -241,8 +249,8 @@ export async function getStatusLinkPayment (id: string, token?: string) {
  * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
 */
-export async function reversePayment (id: string, token?: string) {
-  const { data } = await getPayment({ id }, token)
+export async function reversePayment (id: string, token: string) {
+  const { data } = await getPayment(token, { id })
   const reference = (data as Record<string, any>)?.reference
   const res = await instanceAxios({
     token,
@@ -268,7 +276,7 @@ export async function reversePayment (id: string, token?: string) {
  * * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
  */
-export async function getPayment (query?: Record<string, any>, token?: string) {
+export async function getPayment (token: string, query?: Record<string, any>) {
   const res = await instanceAxios({
     token,
     method: 'GET',
@@ -302,7 +310,7 @@ export async function getPayment (query?: Record<string, any>, token?: string) {
  * * @param token Access-Token suministrado por PagomediosEc para validar
  * la autentificación del usuario
  */
-export async function getSettings (token?: string) {
+export async function getSettings (token: string) {
   const res = await instanceAxios({
     token,
     method: 'GET',
