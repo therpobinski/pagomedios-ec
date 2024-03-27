@@ -10,6 +10,9 @@ on:
     - master
     - release
 
+env:
+  TOKEN: ${{ secrets.TOKEN }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
