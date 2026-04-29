@@ -48,7 +48,6 @@ describe.only('Formateo de datos y calculos', () => {
       amountWithoutTax: 0,
       tax: 0.15,
     } as Data)
-    console.log(data)
     expect(data.amount).toBe(15.53)
     expect(data.tax_value).toBe(2.03)
   })
