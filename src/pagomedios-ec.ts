@@ -76,7 +76,7 @@ function getDocumentType (code: string): string {
   }
 }
 
-function formatBody (data: Data): Record<string, any> {
+export function formatBody (data: Data): Record<string, any> {
   return {
     integration: data.integration || true,
     third: {
@@ -92,13 +92,16 @@ function formatBody (data: Data): Record<string, any> {
     description: data.description,
     amount: parseFloat(
       (
-        ((data.tax * data.amountWithTax) + data.amountWithTax) +
-          data.amountWithoutTax
+        (((data.tax * data.amountWithTax) + data.amountWithTax) +
+          data.amountWithoutTax) + Number.EPSILON
       ).toFixed(2)
     ),
     amount_with_tax: data.amountWithTax,
     amount_without_tax: data.amountWithoutTax,
-    tax_value: parseFloat((data.tax * data.amountWithTax).toFixed(2)),
+    tax_value: parseFloat(
+      (
+        (data.tax * data.amountWithTax) + Number.EPSILON
+      ).toFixed(2)),
     settings: data.settings || [],
     notify_url: data.notifyUrl || null,
     custom_value: data.customValue || null,

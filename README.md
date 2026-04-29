@@ -8,6 +8,9 @@ Es una libreria para facilitar la integración con
 cual permitira un ágil cobro por medio de pagos electrónicos, como tarjetas 
 de crédito.
 
+# Versión actualizada con Nodejs
+Versión: 22.20.0 (jod)
+
 ## Funciones
 
 Estas son las funciones que se encuentran integradas en la actual versión.

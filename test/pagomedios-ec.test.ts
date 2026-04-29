@@ -1,12 +1,15 @@
-const token = process.env.TOKEN || 'error-sin-token'
 import generetePayment, {
   getStatusLinkPayment,
   reversePayment,
   getSettings,
+  formatBody,
   getPayment,
   Data,
 } from '../src/pagomedios-ec'
+import { expect, describe, test } from '@jest/globals'
 import PagoMediosErrorEc from '../src/pagomedios-ec-error'
+
+const token = process.env.TOKEN || 'error-sin-token'
 
 function makeBody ({ CIInc = false, bodyInc = false, tax = 0.15 }) {
   return {
@@ -29,6 +32,27 @@ function errorConnection(e: any) {
   expect(e.type).toBe(PagoMediosErrorEc.TYPE_CONNECTION)
   expect(typeof e.message).toEqual('string')
 }
+
+describe.only('Formateo de datos y calculos', () => {
+  test('Prueba de calculos exitosos', () => {
+    const data = formatBody({
+      companyType: 'Persona Natural',
+      document: '1726834771',
+      documentType: '01',
+      fullName: 'Nombré Prueba Ecuadoriano',
+      address: 'Quito - Ecuador',
+      mobile: '+59399999999',
+      email: 'ejemplo@ejm.com',
+      description: 'Solicitud de prueba unitaria',
+      amountWithTax: 13.5,
+      amountWithoutTax: 0,
+      tax: 0.15,
+    } as Data)
+    console.log(data)
+    expect(data.amount).toBe(15.53)
+    expect(data.tax_value).toBe(2.03)
+  })
+})
 
 describe('obtener token de pago', () => {
   test('solicitud correcta con datos validados', async () => {
