@@ -220,7 +220,7 @@ export default async function (data: Data, token: string) {
  * la autentificación del usuario
 */
 export async function getStatusLinkPayment (id: string, token: string) {
-  const res = await instanceAxios<Record<string, any>>({
+  const res = await instanceAxios<Record<string, any>[]>({
     token,
     method: 'GET',
     query: { id },
@@ -287,7 +287,7 @@ export async function reversePayment (id: string, token: string) {
  * la autentificación del usuario
  */
 export async function getPayment (token: string, query?: Record<string, any>) {
-  const res = await instanceAxios<Record<string, any>>({
+  const res = await instanceAxios<Record<string, any>[]>({
     token,
     method: 'GET',
     query,
