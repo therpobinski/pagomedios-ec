@@ -56,11 +56,11 @@ export interface OptionsRequest {
   query?: { [key: string]: any }
 }
 
-export interface ResponseEc {
+export interface ResponseEc<T = Record<string, any> | Record<string, any>[]> {
   success: boolean
   status: number
   message?: string
-  data?: Record<string, any> | Record<string, any>[]
+  data?: T
 }
 
 function getDocumentType (code: string): string {
@@ -133,7 +133,9 @@ const StatusPayment = [
  * Instancia de petición genérica con `https`, con el fin de usarla para todo
  * tipo de petición `application/json`.
 */
-async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
+async function instanceAxios<T = Record<string, any> | Record<string, any>[]> (
+  args: OptionsRequest
+): Promise<ResponseEc<T>> {
   const options = {
     host: ENDPOINT,
     path: args.path,
@@ -154,7 +156,7 @@ async function instanceAxios (args: OptionsRequest): Promise<ResponseEc> {
       res.on('data', (value) => { responseBody += value })
       res.on('end', () => {
         try {
-          const responseJson: ResponseEc = JSON.parse(responseBody)
+          const responseJson = JSON.parse(responseBody) as ResponseEc<T>
           if (responseJson.status === 401 && responseJson.success === false) {
             throw new PagoMediosErrorEc(
               responseJson.message || 'Error en petición de instancia lib-pagomedios-ec',
@@ -194,12 +196,12 @@ export default async function (data: Data, token: string) {
       PagoMediosErrorEc.TAX_INCORRECT,
     )
   }
-  const res = await instanceAxios({
+  const res = await instanceAxios<Record<string, any>>({
     body: formatBody(data),
     token,
     method: 'POST',
     path: '/pagomedios/v2/payment-requests',
-  }) as ResponseEc
+  })
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
       res.data
@@ -218,12 +220,12 @@ export default async function (data: Data, token: string) {
  * la autentificación del usuario
 */
 export async function getStatusLinkPayment (id: string, token: string) {
-  const res = await instanceAxios({
+  const res = await instanceAxios<Record<string, any>>({
     token,
     method: 'GET',
     query: { id },
     path: '/pagomedios/v2/payment-requests',
-  }) as ResponseEc
+  })
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
       res.message || 'Error en obtención de estado de pago.',
@@ -260,12 +262,12 @@ export async function getStatusLinkPayment (id: string, token: string) {
 export async function reversePayment (id: string, token: string) {
   const { data } = await getPayment(token, { id })
   const reference = (data as Record<string, any>)?.reference
-  const res = await instanceAxios({
+  const res = await instanceAxios<Record<string, any>>({
     token,
     method: 'POST',
     body: { reference },
     path: '/pagomedios/v2/cards/reverse',
-  }) as ResponseEc
+  })
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
       res.message || 'Error en revisión de un pago revertido',
@@ -285,12 +287,12 @@ export async function reversePayment (id: string, token: string) {
  * la autentificación del usuario
  */
 export async function getPayment (token: string, query?: Record<string, any>) {
-  const res = await instanceAxios({
+  const res = await instanceAxios<Record<string, any>>({
     token,
     method: 'GET',
     query,
     path: '/pagomedios/v2/payment-requests',
-  }) as ResponseEc
+  })
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
       res.message || 'Error en obtención del pago',
@@ -319,11 +321,11 @@ export async function getPayment (token: string, query?: Record<string, any>) {
  * la autentificación del usuario
  */
 export async function getSettings (token: string) {
-  const res = await instanceAxios({
+  const res = await instanceAxios<Record<string, any>[]>({
     token,
     method: 'GET',
     path: '/pagomedios/v2/settings',
-  }) as ResponseEc
+  })
   if (res.success === false && res.status >= 400) {
     throw new PagoMediosErrorEc(
       res.message || 'Error en obtención de las configuraciones',
